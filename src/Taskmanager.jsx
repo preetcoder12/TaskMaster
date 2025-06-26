@@ -7,6 +7,7 @@ import {
   Play,
   Pause,
   Trash2,
+  ArrowRight,
   Calendar,
   TrendingUp,
 } from "lucide-react";
@@ -55,11 +56,16 @@ const TaskManager = () => {
     dueDate: "",
     status: "todo",
   });
-
+  const getNextStatus = (currentStatus) => {
+    const statusOrder = ["todo", "in-progress", "completed"];
+    const currentIndex = statusOrder.indexOf(currentStatus);
+    const nextIndex = (currentIndex + 1) % statusOrder.length;
+    return statusOrder[nextIndex];
+  };
   // Save tasks to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(task));
-    
+
     const completedTasks = task.filter((t) => t.status === "completed").length;
     const inProgressTasks = task.filter(
       (t) => t.status === "in-progress"
@@ -81,7 +87,16 @@ const TaskManager = () => {
     if (filter === "all") return true;
     return t.status === filter;
   });
-
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "completed":
+        return "Completed";
+      case "in-progress":
+        return "In Progress";
+      default:
+        return "To Do";
+    }
+  };
   const addTask = () => {
     if (newTask.title.trim() === "") return;
     const newTaskItem = {
@@ -430,22 +445,35 @@ const TaskManager = () => {
                                 year: "numeric",
                               })}
                             </span>
-                            {isOverdue(t.dueDate) && t.status !== "completed" && (
-                              <span className="flex items-center gap-1 text-red-500 ml-2">
-                                <AlertCircle className="w-3 h-3" />
-                                Overdue
-                              </span>
-                            )}
+                            {isOverdue(t.dueDate) &&
+                              t.status !== "completed" && (
+                                <span className="flex items-center gap-1 text-red-500 ml-2">
+                                  <AlertCircle className="w-3 h-3" />
+                                  Overdue
+                                </span>
+                              )}
                           </div>
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => deleteTask(t.id)}
-                      className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex flex-row gap-4">
+                      <button
+                        onClick={() => toggleTaskStatus(t.id)}
+                        className="flex items-center gap-1 px-3 py-1 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                        title={`Change to ${getStatusLabel(
+                          getNextStatus(t.status)
+                        )}`}
+                      >
+                        <span>Next</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => deleteTask(t.id)}
+                        className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
